@@ -249,6 +249,10 @@
     display: grid;
   }
 
+  .hidden {
+    display: none;
+  }
+
   .h-10 {
     height: calc(var(--spacing) * 10);
   }
@@ -418,6 +422,14 @@
 
   .text-background {
     color: var(--background);
+  }
+
+  .uppercase {
+    text-transform: uppercase;
+  }
+
+  .italic {
+    font-style: italic;
   }
 
   .antialiased {
