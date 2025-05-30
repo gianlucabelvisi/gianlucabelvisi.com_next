@@ -1,39 +1,31 @@
 import { notFound } from 'next/navigation'
-import type { Metadata } from 'next'
+import { Metadata } from 'next'
+import { getPostBySlug } from '@/lib/posts'
 
 interface BlogPostPageProps {
-  params: {
-    slug: string
-  }
+  params: Promise<{ slug: string }>
 }
 
-// This will be replaced with actual post fetching logic later
 async function getPost(slug: string) {
-  // For now, only return data for the diabetes post
-  if (slug === 'diabetes') {
-    return {
-      slug: 'diabetes',
-      frontmatter: {
-        path: '/diabetes',
-        date: '2024-02-24',
-        title: 'I have diabetes and that\'s ok',
-        subTitle: 'How a cat helped my diagnosis, and on processing loss.',
-        author: 'Gianluca Belvisi',
-        hashtags: 'health,lifestyle,mindfulness',
-        hidden: false
-      },
-      content: 'Blog post content will be loaded here...'
-    }
-  }
-  return null
+  return getPostBySlug(slug)
+}
+
+export async function generateStaticParams() {
+  // For now, we'll just return the diabetes post
+  // Later we can scan the content directory for all posts
+  return [
+    { slug: 'diabetes' }
+  ]
 }
 
 export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
-  const post = await getPost(params.slug)
+  const { slug } = await params
+  const post = await getPost(slug)
   
   if (!post) {
     return {
-      title: 'Post Not Found'
+      title: 'Post Not Found',
+      description: 'The requested blog post could not be found.'
     }
   }
 
@@ -41,18 +33,33 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
     title: post.frontmatter.title,
     description: post.frontmatter.subTitle,
     authors: [{ name: post.frontmatter.author }],
+    openGraph: {
+      title: post.frontmatter.title,
+      description: post.frontmatter.subTitle,
+      type: 'article',
+      publishedTime: post.frontmatter.date,
+      authors: [post.frontmatter.author],
+      images: post.frontmatter.featureImage ? [
+        {
+          url: `/images/${slug}/${post.frontmatter.featureImage}`,
+          width: 1200,
+          height: 630,
+          alt: post.frontmatter.title,
+        }
+      ] : undefined,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.frontmatter.title,
+      description: post.frontmatter.subTitle,
+      images: post.frontmatter.featureImage ? [`/images/${slug}/${post.frontmatter.featureImage}`] : undefined,
+    },
   }
 }
 
-export async function generateStaticParams() {
-  // For now, only generate the diabetes post
-  return [
-    { slug: 'diabetes' }
-  ]
-}
-
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
-  const post = await getPost(params.slug)
+  const { slug } = await params
+  const post = await getPost(slug)
 
   if (!post) {
     notFound()
@@ -60,53 +67,48 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   return (
     <article style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem' }}>
-      {/* Post Header */}
       <header style={{ marginBottom: '3rem', textAlign: 'center' }}>
         <time style={{ 
           fontSize: '0.9rem', 
-          color: '#666',
-          textTransform: 'uppercase',
-          letterSpacing: '0.1em'
+          color: '#666', 
+          textTransform: 'uppercase', 
+          letterSpacing: '0.1em' 
         }}>
-          {new Date(post.frontmatter.date).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          })}
+          {post.frontmatter.formattedDate || post.frontmatter.date}
         </time>
+        
         <h1 style={{ 
           fontSize: '2.5rem', 
-          marginTop: '1rem',
-          marginBottom: '1rem',
-          lineHeight: '1.2'
+          marginTop: '1rem', 
+          marginBottom: '1rem', 
+          lineHeight: '1.2' 
         }}>
           {post.frontmatter.title}
         </h1>
+        
         <p style={{ 
           fontSize: '1.2rem', 
-          color: '#666',
-          fontStyle: 'italic'
+          color: '#666', 
+          fontStyle: 'italic' 
         }}>
           {post.frontmatter.subTitle}
         </p>
+        
         <p style={{ 
           fontSize: '0.9rem', 
-          color: '#999',
-          marginTop: '1rem'
+          color: '#999', 
+          marginTop: '1rem' 
         }}>
           By {post.frontmatter.author}
         </p>
       </header>
 
-      {/* Post Content */}
-      <div style={{ 
-        lineHeight: '1.7',
-        fontSize: '1.1rem'
-      }}>
-        <div style={{
-          padding: '2rem',
-          backgroundColor: '#f9f9f9',
-          borderRadius: '8px',
+      <div style={{ lineHeight: '1.7', fontSize: '1.1rem' }}>
+        {/* Placeholder for MDX content */}
+        <div style={{ 
+          padding: '2rem', 
+          backgroundColor: '#f9f9f9', 
+          borderRadius: '8px', 
           border: '1px solid #eee',
           textAlign: 'center'
         }}>
@@ -114,20 +116,21 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           <p>This is where the full MDX content will be rendered.</p>
           <p>We'll implement the MDX processing and custom components in the next phases.</p>
           <p style={{ marginTop: '2rem', fontSize: '0.9rem', color: '#666' }}>
-            <strong>Post slug:</strong> {params.slug}
+            <strong>Post slug:</strong> {slug}
           </p>
         </div>
       </div>
 
-      {/* Post Footer */}
       <footer style={{ 
         marginTop: '4rem', 
-        paddingTop: '2rem',
+        paddingTop: '2rem', 
         borderTop: '1px solid #eee',
         textAlign: 'center'
       }}>
         <p style={{ color: '#666' }}>
-          <a href="/" style={{ textDecoration: 'none' }}>← Back to Home</a>
+          <a href="/" style={{ textDecoration: 'none' }}>
+            ← Back to Home
+          </a>
         </p>
       </footer>
     </article>
