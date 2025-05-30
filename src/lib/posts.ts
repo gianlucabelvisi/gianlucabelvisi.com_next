@@ -5,6 +5,15 @@ import type { BlogPost, BlogPostFrontmatter } from '@/types/blog'
 
 const postsDirectory = path.join(process.cwd(), 'content')
 
+function formatDate(dateString: string): string {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  })
+}
+
 export function getPostBySlug(slug: string): BlogPost | null {
   try {
     const fullPath = path.join(postsDirectory, `${slug}.mdx`)
@@ -16,12 +25,18 @@ export function getPostBySlug(slug: string): BlogPost | null {
     const fileContents = fs.readFileSync(fullPath, 'utf8')
     const { data, content } = matter(fileContents)
     
-    // Validate frontmatter
-    const frontmatter = data as BlogPostFrontmatter
+    // Validate frontmatter and ensure date is a string
+    const frontmatter = {
+      ...data,
+      date: typeof data.date === 'string' ? data.date : data.date?.toISOString?.() || data.date
+    } as BlogPostFrontmatter
     
     return {
       slug,
-      frontmatter,
+      frontmatter: {
+        ...frontmatter,
+        formattedDate: formatDate(frontmatter.date)
+      },
       content,
       excerpt: generateExcerpt(content)
     }
@@ -48,7 +63,9 @@ export function getAllPosts(): BlogPost[] {
       .filter(post => !post.frontmatter.hidden)
       .sort((a, b) => {
         // Sort by date, newest first
-        return new Date(b.frontmatter.date).getTime() - new Date(a.frontmatter.date).getTime()
+        const dateA = new Date(a.frontmatter.date).getTime()
+        const dateB = new Date(b.frontmatter.date).getTime()
+        return dateB - dateA
       })
     
     return posts

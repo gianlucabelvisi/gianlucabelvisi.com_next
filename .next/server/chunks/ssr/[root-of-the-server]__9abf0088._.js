@@ -58,6 +58,14 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$gray$2d$matt
 ;
 ;
 const postsDirectory = __TURBOPACK__imported__module__$5b$externals$5d2f$path__$5b$external$5d$__$28$path$2c$__cjs$29$__["default"].join(process.cwd(), 'content');
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+}
 function getPostBySlug(slug) {
     try {
         const fullPath = __TURBOPACK__imported__module__$5b$externals$5d2f$path__$5b$external$5d$__$28$path$2c$__cjs$29$__["default"].join(postsDirectory, `${slug}.mdx`);
@@ -66,11 +74,17 @@ function getPostBySlug(slug) {
         }
         const fileContents = __TURBOPACK__imported__module__$5b$externals$5d2f$fs__$5b$external$5d$__$28$fs$2c$__cjs$29$__["default"].readFileSync(fullPath, 'utf8');
         const { data, content } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$gray$2d$matter$2f$index$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"])(fileContents);
-        // Validate frontmatter
-        const frontmatter = data;
+        // Validate frontmatter and ensure date is a string
+        const frontmatter = {
+            ...data,
+            date: typeof data.date === 'string' ? data.date : data.date?.toISOString?.() || data.date
+        };
         return {
             slug,
-            frontmatter,
+            frontmatter: {
+                ...frontmatter,
+                formattedDate: formatDate(frontmatter.date)
+            },
             content,
             excerpt: generateExcerpt(content)
         };
@@ -90,7 +104,9 @@ function getAllPosts() {
             return getPostBySlug(slug);
         }).filter((post)=>post !== null).filter((post)=>!post.frontmatter.hidden).sort((a, b)=>{
             // Sort by date, newest first
-            return new Date(b.frontmatter.date).getTime() - new Date(a.frontmatter.date).getTime();
+            const dateA = new Date(a.frontmatter.date).getTime();
+            const dateB = new Date(b.frontmatter.date).getTime();
+            return dateB - dateA;
         });
         return posts;
     } catch (error) {
@@ -237,7 +253,7 @@ function HomePage() {
                                                 className: "flex items-center gap-2 text-sm text-gray-500 mb-3",
                                                 children: [
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                        children: featuredPost.frontmatter.date
+                                                        children: featuredPost.frontmatter.formattedDate || featuredPost.frontmatter.date
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/page.tsx",
                                                         lineNumber: 47,
@@ -358,7 +374,7 @@ function HomePage() {
                                                     className: "flex items-center gap-2 text-sm text-gray-500 mb-3",
                                                     children: [
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                            children: post.frontmatter.date
+                                                            children: post.frontmatter.formattedDate || post.frontmatter.date
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/page.tsx",
                                                             lineNumber: 90,

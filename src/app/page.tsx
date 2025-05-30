@@ -44,7 +44,7 @@ export default function HomePage() {
                 </div>
                 <div className="md:w-2/3">
                   <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
-                    <span>{featuredPost.frontmatter.date}</span>
+                    <span>{featuredPost.frontmatter.formattedDate || featuredPost.frontmatter.date}</span>
                     <span>•</span>
                     <span>{featuredPost.frontmatter.hashtags}</span>
                   </div>
@@ -87,7 +87,7 @@ export default function HomePage() {
                   />
                   <div className="p-6">
                     <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
-                      <span>{post.frontmatter.date}</span>
+                      <span>{post.frontmatter.formattedDate || post.frontmatter.date}</span>
                       <span>•</span>
                       <span>{post.frontmatter.hashtags}</span>
                     </div>
