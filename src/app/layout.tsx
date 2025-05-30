@@ -7,7 +7,6 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Gianluca Belvisi",
   description: "Homepage of Gianluca Belvisi - Personal blog and thoughts",
-  author: "Gianluca Belvisi",
 };
 
 export default function RootLayout({

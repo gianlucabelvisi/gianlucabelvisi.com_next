@@ -77,7 +77,7 @@ export function getAllPosts(): BlogPost[] {
 
 export function getFeaturedPost(): BlogPost | null {
   const posts = getAllPosts()
-  return posts.length > 0 ? posts[0] : null
+  return posts.length > 0 ? posts[0]! : null
 }
 
 function generateExcerpt(content: string, maxLength: number = 160): string {
